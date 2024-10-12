@@ -14,7 +14,7 @@ export default function Selector({
     const { setValue } = useFormContext();
 
     const filtrados = cities.filter((city) =>
-        city.city.toLowerCase().includes(keyword.toLowerCase())
+        city.city.toLowerCase().includes(keyword.toLowerCase()) || city.country.toLowerCase().includes(keyword.toLowerCase())
     );
 
     const handleClick = (city: string) => {

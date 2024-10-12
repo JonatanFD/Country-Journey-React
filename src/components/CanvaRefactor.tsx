@@ -12,8 +12,8 @@ export default function CanvaRefactor() {
         height: window.innerHeight,
     });
     const { routes, cities, setCities, setRoutes } = useGraph();
-    const {path} = useJourney()
-    const stageRef = React.useRef<Konva.Stage>(null);
+    const {path, cost} = useJourney()
+    const lines = React.useRef<{[lineId: string]:  Konva.Line}>({})
 
     // zoom
     const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
@@ -70,32 +70,22 @@ export default function CanvaRefactor() {
     }, []);
 
     useEffect(() => {
-        if (path.length === 0) return;
-        if (!stageRef.current) return;
-
-        const lines = stageRef.current?.find("Line");
-
-        lines?.forEach((line) => {
-            const id = line.id();
-            
-            for (let i = 0; i < path.length - 1; i++) {
-                if (
-                    id.includes(path[i]) &&
-                    id.includes(path[i + 1])
-                ) {
-                    line.setAttr("stroke", "red");
-                }
-            }
-        });
-    }, [path]);
-
+        if (!path) return;
+        
+        for (let i = 0; i < path.length - 1; i++) {
+            const line = lines.current[path[i] + "-" + path[i + 1]] ?? lines.current[path[i + 1] + "-" + path[i]];
+            if (!line) return;
+            line.stroke("red");
+            line.strokeWidth(3);
+        }
+        
+    }, [path, cost])
     return (
         <Stage
             width={screenSize.width}
             height={screenSize.height}
             onWheel={handleZoom}
             draggable
-            ref={stageRef}
         >
             <Layer>
                 {routes.map((route) => {
@@ -119,6 +109,10 @@ export default function CanvaRefactor() {
                             stroke="green"
                             strokeWidth={4}
                             id={route.from + "-" + route.to}
+                            ref={lineRef => {
+                                if (!lineRef) return;
+                                lines.current[route.from + "-" + route.to] = lineRef;
+                            }}
                         />
                     );
                 })}

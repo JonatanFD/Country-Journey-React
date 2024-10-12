@@ -1,5 +1,5 @@
-import CanvaRefactor from "./components/CanvaRefactor"
-import JourneyFormRefactor from "./components/JourneyFormRefactor"
+import CanvaRefactor from "./components/CanvaRefactor.tsx"
+import JourneyFormRefactor from "./components/JourneyFormRefactor.tsx"
 
 function App() {
 

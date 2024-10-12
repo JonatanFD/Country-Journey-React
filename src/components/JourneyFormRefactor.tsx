@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import Selector from "./Selector";
 import { useJourney } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
+import { useDebouncedCallback } from "use-debounce";
 
 const formSchema = z.object({
     from: z.string({ message: "Ingresa un origen" }),
@@ -29,10 +30,10 @@ export default function JourneyFormRefactor() {
         resolver: zodResolver(formSchema),
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLFormElement>) => {
+    const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLFormElement>) => {
         setIsSelectorOpen(true); // open selector
         setKeyword(e.target.value);
-    };
+    }, 300)
 
     const handleFocus = (e: React.FocusEvent<HTMLFormElement>) => {
         setField(e.target.name as "" | "from" | "to" | "country");
