@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDebouncedCallback } from "use-debounce";
 import { z } from "zod";
 import { create } from "zustand";
 
@@ -34,10 +33,10 @@ export const useJourneyForm = () =>{
         resolver: zodResolver(formSchema),
     });
 
-    const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLFormElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLFormElement>) => {
         setIsSelectorOpen(true); // open selector
         setKeyword(e.target.value);
-    }, 300)
+    }
 
     const handleFocus = (e: React.FocusEvent<HTMLFormElement>) => {
         setField(e.target.name as "" | "from" | "to" | "country");
