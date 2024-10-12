@@ -1,6 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm } from "react-hook-form";
-import { z } from "zod";
+import { FormProvider } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
     Form,
@@ -12,36 +10,14 @@ import {
 } from "./ui/form";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
 import Selector from "./Selector";
-import { useJourney } from "@/hooks/useJourney";
+import { useJourney, useJourneyForm } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
-import { useDebouncedCallback } from "use-debounce";
 
-const formSchema = z.object({
-    from: z.string({ message: "Ingresa un origen" }),
-    to: z.string({ message: "Ingresa un destino" }),
-});
 
 export default function JourneyForm() {
-    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const { setJourney } = useJourney();
-
-    const [field, setField] = useState< "" | "from" | "to" | "country">("")
-    const [keyword, setKeyword] = useState<string>("")
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-    });
-
-    const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLFormElement>) => {
-        setIsSelectorOpen(true); // open selector
-        setKeyword(e.target.value);
-    }, 300)
-
-    const handleFocus = (e: React.FocusEvent<HTMLFormElement>) => {
-        setField(e.target.name as "" | "from" | "to" | "country");
-    };
+    const { form, handleChange, handleFocus, isSelectorOpen, field, keyword } = useJourneyForm();
 
     const onSubmit = form.handleSubmit((data) => {
         try {
@@ -54,16 +30,6 @@ export default function JourneyForm() {
             console.log(error);
         }
     });
-
-    useEffect(() => {
-        window.addEventListener("click", (e) => {
-            if (e.target instanceof HTMLElement) {
-                if (!e.target.closest(".selector")) {
-                    setIsSelectorOpen(false);
-                }
-            }
-        });
-    }, []);
 
     return (
         <div className="absolute top-4 left-4 flex gap-4 z-30 h-fit">

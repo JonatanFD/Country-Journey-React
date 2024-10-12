@@ -1,12 +1,11 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDebouncedCallback } from "use-debounce";
+import { z } from "zod";
 import { create } from "zustand";
 
 interface JourneyState {
-    from: string;
-    setFrom: (from: string) => void;
-
-    to: string;
-    setTo: (to: string) => void;
-
     cost: number;
     path: string[];
 
@@ -14,12 +13,6 @@ interface JourneyState {
 }
 
 export const useJourney = create<JourneyState>((set) => ({
-    from: "",
-    setFrom: (from: string) => set({ from }),
-
-    to: "",
-    setTo: (to: string) => set({ to }),
-
     cost: 0,
     path: [],
     
@@ -27,5 +20,38 @@ export const useJourney = create<JourneyState>((set) => ({
 }))
 
 
+const formSchema = z.object({
+    from: z.string({ message: "Ingresa un origen" }),
+    to: z.string({ message: "Ingresa un destino" }),
+});
 
+export const useJourneyForm = () =>{
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+    const [field, setField] = useState< "" | "from" | "to" | "country">("")
+    const [keyword, setKeyword] = useState<string>("")
 
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+    });
+
+    const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLFormElement>) => {
+        setIsSelectorOpen(true); // open selector
+        setKeyword(e.target.value);
+    }, 300)
+
+    const handleFocus = (e: React.FocusEvent<HTMLFormElement>) => {
+        setField(e.target.name as "" | "from" | "to" | "country");
+    };
+   
+    useEffect(() => {
+        window.addEventListener("click", (e) => {
+            if (e.target instanceof HTMLElement) {
+                if (!e.target.closest(".selector")) {
+                    setIsSelectorOpen(false);
+                }
+            }
+        });
+    }, []);
+
+    return {form, handleChange, handleFocus, isSelectorOpen, field, keyword}
+}
