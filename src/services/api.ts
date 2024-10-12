@@ -1,4 +1,4 @@
-import { City, JourneyConstrains } from "../types";
+import { City, JourneyConstrains, Route } from "../types";
 
 const API_URL = "http://127.0.0.1:5000/";
 
@@ -17,11 +17,12 @@ export async function getCities() {
 export async function getRoutes() {
   try {
     const data = await fetch(API_URL + "routes");
-    const routes = await data.json();
+    const routes = await data.json() as Route[];
 
     return routes;
   } catch (error) {
     console.log(error);
+    return []
   }
 }
 
