@@ -15,6 +15,7 @@ import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
 import Selector from "./Selector";
 import { useJourney } from "@/hooks/useJourney";
+import { getJourney } from "@/services/api";
 
 const formSchema = z.object({
     from: z.string({ message: "Ingresa un origen" }),
@@ -23,7 +24,7 @@ const formSchema = z.object({
 
 export default function JourneyFormRefactor() {
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-    const { setKeyword, keyword, setField, field } = useJourney();
+    const { setKeyword, keyword, setField, field, setJourney } = useJourney();
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
     });
@@ -38,7 +39,15 @@ export default function JourneyFormRefactor() {
     };
 
     const onSubmit = form.handleSubmit((data) => {
-        console.log(data);
+        try {
+            getJourney({ from: data.from, to: data.to, countries: [] }).then(
+                (res) => {
+                    setJourney(res.cost, res.path);
+                }
+            );
+        } catch (error) {
+            console.log(error);
+        }
     });
 
     useEffect(() => {
