@@ -1,16 +1,21 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Circle, Layer, Line, Stage } from "react-konva";
-import { City, Route } from "../types";
 import { KonvaEventObject } from "konva/lib/Node";
 import { getCities, getRoutes } from "../services/api";
+import { useGraph } from "@/hooks/useGraph";
+import Konva from "konva";
+import { useJourney } from "@/hooks/useJourney";
 
 export default function Canva() {
     const [screenSize, setScreenSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
     });
-    const [cities, setCities] = useState<City[]>([]);
-    const [routes, setRoutes] = useState<Route[]>([]);
+
+    const { cities, routes, setCities, setRoutes } = useGraph();
+    const stageRef = useRef<Konva.Stage>(null);
+
+    const { cost, path } = useJourney();
 
     // Zoom
     const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
@@ -62,17 +67,40 @@ export default function Canva() {
         getCities().then((data) => {
             setCities(data);
         });
-    }, [cities]);
+    }, []);
 
     // Fetch routes
     useLayoutEffect(() => {
         if (routes.length !== 0) return;
         getRoutes().then((data) => {
-            console.log(data);
-
             setRoutes(data);
         });
-    }, [routes]);
+    }, []);
+
+    useEffect(() => {
+        if (path.length === 0) return;
+        if (!stageRef.current) return;
+
+        console.log("updating path in canvas");
+        console.log(path);
+
+        const lines = stageRef.current?.find("Line");
+
+        console.log(lines);
+
+        lines?.forEach((line) => {
+            const id = line.id();
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                if (
+                    id.includes(path[i]) &&
+                    id.includes(path[i + 1])
+                ) {
+                    line.setAttr("stroke", "red");
+                }
+            }
+        });
+    }, [cost, path]);
 
     return (
         <Stage
@@ -80,6 +108,7 @@ export default function Canva() {
             height={screenSize.height}
             draggable
             onWheel={handleZoom}
+            ref={stageRef}
         >
             <Layer>
                 {routes.map((route) => {
@@ -102,6 +131,7 @@ export default function Canva() {
                                 to.latitude,
                             ]}
                             stroke="green"
+                            id={route.from + route.to}
                         />
                     );
                 })}
