@@ -1,23 +1,22 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Circle, Layer, Line, Stage } from "react-konva";
-import { KonvaEventObject } from "konva/lib/Node";
-import { getCities, getRoutes } from "../services/api";
 import { useGraph } from "@/hooks/useGraph";
-import Konva from "konva";
 import { useJourney } from "@/hooks/useJourney";
+import { getCities, getRoutes } from "@/services/api";
+import Konva from "konva";
+import { KonvaEventObject } from "konva/lib/Node";
+import React, { memo, useEffect, useLayoutEffect, useState } from "react";
+import { Circle, Layer, Line, Stage } from "react-konva";
 
-export default function Canva() {
+const Canva = memo(() => {
     const [screenSize, setScreenSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
     });
-
-    const { cities, routes, setCities, setRoutes } = useGraph();
-    const stageRef = useRef<Konva.Stage>(null);
-
-    const { cost, path } = useJourney();
-
-    // Zoom
+    const { routes, cities, setCities, setRoutes } = useGraph();
+    const {path, cost} = useJourney()
+    const lines = React.useRef<{[lineId: string]:  Konva.Line}>({})
+    console.log("rendering");
+    
+    // zoom
     const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
         e.evt.preventDefault();
         const scaleBy = 1.2;
@@ -50,7 +49,6 @@ export default function Canva() {
         };
         stage.position(newPos);
     };
-
     // Update Screen Size on Resize
     useEffect(() => {
         window.addEventListener("resize", () => {
@@ -60,55 +58,35 @@ export default function Canva() {
             });
         });
     }, []);
-
-    // Fetch cities
+    // fetch data for canvas
     useLayoutEffect(() => {
+        if (routes.length !== 0) return;
         if (cities.length !== 0) return;
+        getRoutes().then((data) => {
+            setRoutes(data);
+        });
         getCities().then((data) => {
             setCities(data);
         });
     }, []);
 
-    // Fetch routes
-    useLayoutEffect(() => {
-        if (routes.length !== 0) return;
-        getRoutes().then((data) => {
-            setRoutes(data);
-        });
-    }, []);
-
     useEffect(() => {
-        if (path.length === 0) return;
-        if (!stageRef.current) return;
-
-        console.log("updating path in canvas");
-        console.log(path);
-
-        const lines = stageRef.current?.find("Line");
-
-        console.log(lines);
-
-        lines?.forEach((line) => {
-            const id = line.id();
-            
-            for (let i = 0; i < path.length - 1; i++) {
-                if (
-                    id.includes(path[i]) &&
-                    id.includes(path[i + 1])
-                ) {
-                    line.setAttr("stroke", "red");
-                }
-            }
-        });
-    }, [cost, path]);
-
+        if (!path) return;
+        
+        for (let i = 0; i < path.length - 1; i++) {
+            const line = lines.current[path[i] + "-" + path[i + 1]] ?? lines.current[path[i + 1] + "-" + path[i]];
+            if (!line) return;
+            line.stroke("red");
+            line.strokeWidth(3);
+        }
+        
+    }, [path, cost])
     return (
         <Stage
             width={screenSize.width}
             height={screenSize.height}
-            draggable
             onWheel={handleZoom}
-            ref={stageRef}
+            draggable
         >
             <Layer>
                 {routes.map((route) => {
@@ -118,12 +96,11 @@ export default function Canva() {
                     const to = cities.find(
                         (city) => `${city.city},${city.country}` === route.to
                     );
-
                     if (!from || !to) return null;
 
                     return (
                         <Line
-                            key={route.from + route.to}
+                            key={route.from + "-" + route.to}
                             points={[
                                 from.longitude,
                                 from.latitude,
@@ -131,14 +108,19 @@ export default function Canva() {
                                 to.latitude,
                             ]}
                             stroke="green"
-                            id={route.from + route.to}
+                            strokeWidth={4}
+                            id={route.from + "-" + route.to}
+                            ref={lineRef => {
+                                if (!lineRef) return;
+                                lines.current[route.from + "-" + route.to] = lineRef;
+                            }}
                         />
                     );
                 })}
 
                 {cities.map((city) => (
                     <Circle
-                        key={city.city + city.country}
+                        key={city.city + "-" + city.country}
                         x={city.longitude}
                         y={city.latitude}
                         radius={5}
@@ -148,4 +130,6 @@ export default function Canva() {
             </Layer>
         </Stage>
     );
-}
+})
+
+export default Canva

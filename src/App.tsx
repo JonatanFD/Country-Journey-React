@@ -1,16 +1,12 @@
-import CanvaRefactor from "./components/CanvaRefactor.tsx"
-import JourneyFormRefactor from "./components/JourneyFormRefactor.tsx"
+import Canva from "./components/Canva"
+import JourneyForm from "./components/JourneyForm"
 
 function App() {
 
   return (
     <>
-      {/* <JourneyForm /> */}
-      <JourneyFormRefactor />
-
-      {/* <Canva /> */}
-      
-      <CanvaRefactor />
+      <JourneyForm />
+      <Canva />
     </>
   )
 }

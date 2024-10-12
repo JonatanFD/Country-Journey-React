@@ -2,14 +2,16 @@ import { useGraph } from "@/hooks/useGraph";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { useFormContext } from "react-hook-form";
+import { memo } from "react";
 
-export default function Selector({
+const Selector = memo((
+    {
     keyword,
     field,
 }: {
     keyword: string;
     field: "" | "from" | "to" | "country";
-}) {
+}) => {
     const { cities } = useGraph();
     const { setValue } = useFormContext();
 
@@ -45,4 +47,6 @@ export default function Selector({
             </CardContent>
         </Card>
     );
-}
+})
+
+export default Selector;

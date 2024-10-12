@@ -1,5 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
     Form,
     FormControl,
@@ -8,61 +10,39 @@ import {
     FormLabel,
     FormMessage,
 } from "./ui/form";
-import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "./ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
-import OptionSelector from "./OptionSelector";
+import Selector from "./Selector";
 import { useJourney } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
+import { useDebouncedCallback } from "use-debounce";
 
 const formSchema = z.object({
-    from: z.string({ message: "El origen es requerido" }),
-    to: z.string({ message: "El destino es requerido" }),
-    filters: z.string().optional(),
+    from: z.string({ message: "Ingresa un origen" }),
+    to: z.string({ message: "Ingresa un destino" }),
 });
 
 export default function JourneyForm() {
-    const [openSelector, setOpenSelector] = useState(false);
-    const { setKeyword, setField, setJourney } =
-        useJourney();
+    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+    const { setJourney } = useJourney();
+
+    const [field, setField] = useState< "" | "from" | "to" | "country">("")
+    const [keyword, setKeyword] = useState<string>("")
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
     });
 
-    // handle input change
-    const onInputChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setOpenSelector(true);
-        const targetValue = e.target.value;
+    const handleChange = useDebouncedCallback((e: React.ChangeEvent<HTMLFormElement>) => {
+        setIsSelectorOpen(true); // open selector
+        setKeyword(e.target.value);
+    }, 300)
 
-        setKeyword(targetValue);
-
-        if (!targetValue) {
-            setOpenSelector(false);
-        }
-        const targetName = e.target.name;
-
-        if (targetName === "from" || targetName === "to") {
-            setField(targetName);
-        } else {
-            setField("country");
-        }
+    const handleFocus = (e: React.FocusEvent<HTMLFormElement>) => {
+        setField(e.target.name as "" | "from" | "to" | "country");
     };
 
-    // handle input focus
-    const onInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-        const targetName = e.target.name;
-
-        if (targetName === "from" || targetName === "to") {
-            setField(targetName);
-        } else {
-            setField("country");
-        }
-    };
-
-    // handle onSubmit
     const onSubmit = form.handleSubmit((data) => {
         try {
             getJourney({ from: data.from, to: data.to, countries: [] }).then(
@@ -77,22 +57,29 @@ export default function JourneyForm() {
 
     useEffect(() => {
         window.addEventListener("click", (e) => {
-            if (!(e.target as HTMLElement).closest("#form")) {
-                setOpenSelector(false);
+            if (e.target instanceof HTMLElement) {
+                if (!e.target.closest(".selector")) {
+                    setIsSelectorOpen(false);
+                }
             }
         });
     }, []);
 
     return (
-        <section className="absolute top-4 left-4 z-30 flex space-x-4">
-            <Card className="w-fit">
+        <div className="absolute top-4 left-4 flex gap-4 z-30 h-fit">
+            <Card className="w-fit" onClick={(e) => e.stopPropagation()}>
                 <CardHeader>
-                    <CardTitle className="text-2xl">Buscar viaje</CardTitle>
+                    <CardTitle>Formulario de viaje</CardTitle>
                 </CardHeader>
 
                 <CardContent>
                     <Form {...form}>
-                        <form onSubmit={onSubmit} className="space-y-4">
+                        <form
+                            onSubmit={onSubmit}
+                            className="space-y-4"
+                            onChange={handleChange}
+                            onFocus={handleFocus}
+                        >
                             <FormField
                                 control={form.control}
                                 name="from"
@@ -103,10 +90,7 @@ export default function JourneyForm() {
                                         <FormControl>
                                             <Input
                                                 {...field}
-                                                onChange={onInputChangeValue}
-                                                onFocus={onInputFocus}
                                                 autoComplete="off"
-                                                id="form"
                                             />
                                         </FormControl>
 
@@ -125,10 +109,7 @@ export default function JourneyForm() {
                                         <FormControl>
                                             <Input
                                                 {...field}
-                                                onChange={onInputChangeValue}
-                                                onFocus={onInputFocus}
                                                 autoComplete="off"
-                                                id="to"
                                             />
                                         </FormControl>
 
@@ -144,8 +125,8 @@ export default function JourneyForm() {
             </Card>
 
             <FormProvider {...form}>
-                {openSelector && <OptionSelector />}
+                {isSelectorOpen && <Selector keyword={keyword} field={field} />}
             </FormProvider>
-        </section>
+        </div>
     );
 }
