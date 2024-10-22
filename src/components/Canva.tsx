@@ -4,7 +4,7 @@ import { getCities, getRoutes } from "@/services/api";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import React, { memo, useEffect, useLayoutEffect, useState } from "react";
-import { Circle, Layer, Line, Stage } from "react-konva";
+import { Circle, FastLayer, Line, Stage } from "react-konva";
 
 const Canva = memo(() => {
     const [screenSize, setScreenSize] = useState({
@@ -88,7 +88,7 @@ const Canva = memo(() => {
             onWheel={handleZoom}
             draggable
         >
-            <Layer>
+            <FastLayer>
                 {routes.map((route) => {
                     const from = cities.find(
                         (city) => `${city.city},${city.country}` === route.from
@@ -127,7 +127,7 @@ const Canva = memo(() => {
                         fill="white"
                     />
                 ))}
-            </Layer>
+            </FastLayer>
         </Stage>
     );
 })
