@@ -33,7 +33,6 @@ const Selector = memo((
                     {filtrados.map((city) => (
                         <li key={city.city + city.country}>
                             <Button
-                                className="p-2 w-full"
                                 variant="secondary"
                                 onClick={() =>
                                     handleClick(city.city + "," + city.country)

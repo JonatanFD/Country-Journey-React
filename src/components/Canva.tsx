@@ -1,5 +1,6 @@
 import { useGraph } from "@/hooks/useGraph";
 import { useJourney } from "@/hooks/useJourney";
+import { useSelector } from "@/hooks/useSelector";
 import { getCities, getRoutes } from "@/services/api";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
@@ -12,6 +13,7 @@ const Canva = memo(() => {
         height: window.innerHeight,
     });
     const { routes, cities, setCities, setRoutes } = useGraph();
+    const {setNombre} = useSelector()
     const {path, cost} = useJourney()
     const lines = React.useRef<{[lineId: string]:  Konva.Line}>({})
     console.log("rendering");
@@ -113,6 +115,10 @@ const Canva = memo(() => {
                             ref={lineRef => {
                                 if (!lineRef) return;
                                 lines.current[route.from + "-" + route.to] = lineRef;
+                            }}
+                            onClick={() => {
+                                setNombre(route.from + "-" + route.to);
+                                lines.current[route.from + "-" + route.to].stroke("red");
                             }}
                         />
                     );
