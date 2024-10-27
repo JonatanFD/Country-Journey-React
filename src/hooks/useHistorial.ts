@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface HistorialRecord {
+export interface HistorialRecord {
     from: string,
     to: string,
     path: string[],
