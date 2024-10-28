@@ -11,9 +11,9 @@ export default function Historial() {
     return (
         <>
             {historial.length > 0 && (
-                <section className="absolute right-4 top-4 z-30 flex gap-4">
+                <section className="absolute right-4 top-4 flex gap-4">
                     {details && <Details record={details} />}
-                    <Card className="h-fit">
+                    <Card className="h-fit z-30">
                         <CardHeader>
                             <CardTitle>Historial de viajes</CardTitle>
                         </CardHeader>

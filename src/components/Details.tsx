@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 
 export default function Details({ record }: { record: HistorialRecord }) {
     return (
-        <Card>
+        <Card className="z-30">
             <CardHeader>
                 <CardTitle>Detalles de viaje</CardTitle>
             </CardHeader>
