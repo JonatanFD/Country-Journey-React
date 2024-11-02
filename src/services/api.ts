@@ -1,4 +1,4 @@
-import { City, JourneyConstrains, Route } from "../types";
+import { City, GraphFilteredData, JourneyConstrains, Route } from "../types";
 
 const API_URL = "http://127.0.0.1:5000/";
 
@@ -40,5 +40,19 @@ export async function getJourney(journeyConstrains: JourneyConstrains) {
     return journey;
   } catch (error) {
     console.log(error);
+  }
+}
+
+
+export async function getGraphByFilter(): Promise<GraphFilteredData> {
+  const endpoint = API_URL + `cities/filter?country=Colombia,Peru,Argentina`;
+
+  try {
+    const data = await fetch(endpoint);
+    const graph = await data.json() as GraphFilteredData;
+    return graph;
+  } catch (error) {
+    console.log(error);
+    return {cities: [], routes: []}
   }
 }

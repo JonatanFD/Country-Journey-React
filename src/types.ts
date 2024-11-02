@@ -40,3 +40,8 @@ export interface Journey {
     cost: number;
     path: string[]
 }
+
+export interface GraphFilteredData {
+    cities: City[];
+    routes: Route[];
+}
