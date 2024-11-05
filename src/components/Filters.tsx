@@ -1,14 +1,14 @@
-import { Check, Filter, X } from "lucide-react";
+import { Check, Filter, RotateCcw, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import useFilters from "@/hooks/useFilters";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useGraph } from "@/hooks/useGraph";
-import { getGraphByFilter } from "@/services/api";
+import { getCities, getGraphByFilter, getRoutes } from "@/services/api";
 
 export default function Filters() {
-    const { countries, open, setOpen } = useFilters();
-    const {setCities, setRoutes} = useGraph();
+    const { countries, open, setOpen, setCountries } = useFilters();
+    const { setCities, setRoutes } = useGraph();
     const [filters, setFilters] = useState<string[]>([]);
 
     const checkFilter = (country: string) => {
@@ -21,29 +21,58 @@ export default function Filters() {
         if (0 === filters.length) return;
 
         // fetch data
-        getGraphByFilter().then((data) => {
-            setCities(data.cities);
-            setRoutes(data.routes);
-        }).catch((error) => {
-            console.log(error);
-        })
+        getGraphByFilter(filters)
+            .then((data) => {
+                setCities(data.cities);
+                setRoutes(data.routes);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
 
-    }
+    const handleResetClick = () => {
+        getRoutes().then((data) => {
+            setRoutes(data);
+        });
+        getCities().then((data) => {
+            setCities(data);
+        });
+
+        setFilters([]);
+    };
+
+    useEffect(() => {
+        getCities().then((data) => {
+            setCountries([...new Set(data.map((city) => city.country))]);
+        });
+    }, []);
 
     return (
-        <section className="left-0 right-0 mx-auto max-w-96 absolute flex justify-center mt-4">
+        <>
             {open ? (
                 <Card className="w-96 z-30">
                     <CardHeader className="flex flex-row justify-between items-center">
                         <CardTitle>Filtros</CardTitle>
-                        <Button
-                            onClick={handleCloseClick}
-                            className="inline-flex"
-                            size="icon"
-                            variant="ghost"
-                        >
-                            {filters.length > 0 ? <Check /> : <X />}
-                        </Button>
+
+                        <section>
+                            <Button
+                                onClick={handleResetClick}
+                                className="inline-flex"
+                                size="icon"
+                                variant="ghost"
+                            >
+                                <RotateCcw />
+                            </Button>
+                            <Button
+                                onClick={handleCloseClick}
+                                className="inline-flex"
+                                size="icon"
+                                variant="ghost"
+                            >
+                                {filters.length > 0 ? <Check /> : <X />}
+                            </Button>
+                        </section>
                     </CardHeader>
                     {filters.join(", ")}
                     <CardContent>
@@ -79,6 +108,6 @@ export default function Filters() {
                     <Filter />
                 </Button>
             )}
-        </section>
+        </>
     );
 }

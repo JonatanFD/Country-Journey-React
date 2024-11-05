@@ -18,7 +18,6 @@ const Canva = memo(() => {
     const {path, cost} = useJourney()
     const lines = React.useRef<{[lineId: string]:  Konva.Line}>({})
     console.log("rendering");
-    const {setCountries} = useFilters()
     
     // zoom
     const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
@@ -73,7 +72,6 @@ const Canva = memo(() => {
             setCities(data);
             const countries = new Set(data.map((city) => city.country));
             const countriesArray = Array.from(countries);
-            setCountries(countriesArray);
         });
     }, []);
 

@@ -44,8 +44,8 @@ export async function getJourney(journeyConstrains: JourneyConstrains) {
 }
 
 
-export async function getGraphByFilter(): Promise<GraphFilteredData> {
-  const endpoint = API_URL + `cities/filter?country=Colombia,Peru,Argentina`;
+export async function getGraphByFilter(filters: string[]): Promise<GraphFilteredData> {
+  const endpoint = API_URL + `cities/filter?country=${filters.join(",")}`;
 
   try {
     const data = await fetch(endpoint);

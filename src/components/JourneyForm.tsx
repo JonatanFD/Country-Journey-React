@@ -13,8 +13,8 @@ import { Button } from "./ui/button";
 import Selector from "./Selector";
 import { useJourney, useJourneyForm } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
-import { useSelector } from "@/hooks/useSelector";
 import { useHistorial } from "@/hooks/useHistorial";
+import Filters from "./Filters";
 
 export default function JourneyForm() {
     const { setJourney } = useJourney();
@@ -40,11 +40,9 @@ export default function JourneyForm() {
         }
     });
 
-    const { nombre } = useSelector();
-
     return (
-        <div className="absolute top-4 left-4 flex gap-4 z-30 h-fit">
-            <Card className="w-fit" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute top-4 left-4 flex gap-4  h-fit">
+            <Card className="w-fit h-fit z-30" onClick={(e) => e.stopPropagation()}>
                 <CardHeader>
                     <CardTitle>Formulario de viaje</CardTitle>
                 </CardHeader>
@@ -105,9 +103,7 @@ export default function JourneyForm() {
                 {isSelectorOpen && <Selector keyword={keyword} field={field} />}
             </FormProvider>
 
-            <div className="absolute -bottom-4 right-4 flex gap-4">
-                {nombre}
-            </div>
+            <Filters />
         </div>
     );
 }
