@@ -8,6 +8,8 @@ import {
 } from "./ui/card";
 import { Trash, X } from "lucide-react";
 import { Button } from "./ui/button";
+import CityProfile from "./CityProfile";
+import { Label } from "./ui/label";
 
 export default function Details({ record }: { record: HistorialRecord }) {
     return (
@@ -15,13 +17,15 @@ export default function Details({ record }: { record: HistorialRecord }) {
             <CardHeader>
                 <CardTitle>Detalles de viaje</CardTitle>
             </CardHeader>
-            <CardContent>
-                <p>Origen: {record.from}</p>
-                <p>Destino: {record.to}</p>
-                <p>Costo: {record.cost}</p>
-                <ul className="max-h-96 overflow-auto">
+            <CardContent className="space-y-4">
+                <Label className="block">Origen: {record.from}</Label>
+                <Label className="block">Destino: {record.to}</Label>
+                <Label className="block">Costo: {record.cost}</Label>
+                <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
                     {record.path.map((city, index) => (
-                        <li key={index}>{city}</li>
+                        <li>
+                            <CityProfile key={`${city}-${index}`} cityProp={city} />
+                        </li>
                     ))}
                 </ul>
             </CardContent>

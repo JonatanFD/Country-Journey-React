@@ -5,6 +5,7 @@ import useFilters from "@/hooks/useFilters";
 import { useEffect, useState } from "react";
 import { useGraph } from "@/hooks/useGraph";
 import { getCities, getGraphByFilter, getRoutes } from "@/services/api";
+import { Badge } from "./ui/badge";
 
 export default function Filters() {
     const { countries, open, setOpen, setCountries } = useFilters();
@@ -18,7 +19,7 @@ export default function Filters() {
     const handleCloseClick = () => {
         setOpen(false);
 
-        if (0 === filters.length) return;
+        if (0 === filters.length) return handleResetClick();
 
         // fetch data
         getGraphByFilter(filters)
@@ -40,6 +41,14 @@ export default function Filters() {
         });
 
         setFilters([]);
+    };
+
+    const handleCountryClick = (country: string) => {
+        setFilters(
+            filters.includes(country)
+                ? filters.filter((f) => f !== country)
+                : [...filters, country]
+        );
     };
 
     useEffect(() => {
@@ -74,7 +83,6 @@ export default function Filters() {
                             </Button>
                         </section>
                     </CardHeader>
-                    {filters.join(", ")}
                     <CardContent>
                         <ul>
                             {countries.map((country) => (
@@ -87,13 +95,7 @@ export default function Filters() {
                                                 : ""
                                         }`}
                                         onClick={() =>
-                                            setFilters(
-                                                filters.includes(country)
-                                                    ? filters.filter(
-                                                          (f) => f !== country
-                                                      )
-                                                    : [...filters, country]
-                                            )
+                                            handleCountryClick(country)
                                         }
                                     >
                                         {country}
@@ -104,9 +106,17 @@ export default function Filters() {
                     </CardContent>
                 </Card>
             ) : (
-                <Button onClick={() => setOpen(true)} className="z-30">
-                    <Filter />
-                </Button>
+                <section className="z-30">
+                    <Button onClick={() => setOpen(true)}>
+                        <Filter />
+                    </Button>
+                    <section className="flex flex-col gap-1 py-1">
+                        {filters.length > 0 &&
+                            filters.map((country) => (
+                                <Badge key={country}>{country}</Badge>
+                            ))}
+                    </section>
+                </section>
             )}
         </>
     );
