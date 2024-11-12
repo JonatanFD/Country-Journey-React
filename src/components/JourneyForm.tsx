@@ -15,16 +15,18 @@ import { useJourney, useJourneyForm } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
 import { useHistorial } from "@/hooks/useHistorial";
 import Filters from "./Filters";
+import useFilters from "@/hooks/useFilters";
 
 export default function JourneyForm() {
     const { setJourney } = useJourney();
     const { form, handleChange, handleFocus, isSelectorOpen, field, keyword } =
         useJourneyForm();
     const { addRecord } = useHistorial();
+    const {filters} = useFilters()
 
     const onSubmit = form.handleSubmit((data) => {
         try {
-            getJourney({ from: data.from, to: data.to, countries: [] }).then(
+            getJourney({ from: data.from, to: data.to, countries: filters }).then(
                 (res) => {
                     setJourney(res.cost, res.path);
                     addRecord({

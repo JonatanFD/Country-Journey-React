@@ -2,15 +2,14 @@ import { Check, Filter, RotateCcw, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import useFilters from "@/hooks/useFilters";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGraph } from "@/hooks/useGraph";
 import { getCities, getGraphByFilter, getRoutes } from "@/services/api";
 import { Badge } from "./ui/badge";
 
 export default function Filters() {
-    const { countries, open, setOpen, setCountries } = useFilters();
+    const { countries, open, setOpen, setCountries, filters, setFilters } = useFilters();
     const { setCities, setRoutes } = useGraph();
-    const [filters, setFilters] = useState<string[]>([]);
 
     const checkFilter = (country: string) => {
         return filters.includes(country);

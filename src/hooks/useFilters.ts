@@ -5,6 +5,9 @@ interface State {
     setCountries: (countries: string[]) => void;
     open: boolean;
     setOpen: (open: boolean) => void;
+
+    filters: string[];
+    setFilters: (filters: string[]) => void;
 }
 
 const useFilters = create<State>((set) => ({
@@ -12,6 +15,9 @@ const useFilters = create<State>((set) => ({
     setCountries: (countries) => set({ countries }),
     open: false,
     setOpen: (open) => set({ open }),
+
+    filters: [],
+    setFilters: (filters) => set({ filters }),
 }))
 
 export default useFilters;
