@@ -17,9 +17,9 @@ export default function Details({ record, close }: { record: HistorialRecord, cl
 
     return (
         <Card className="z-30">
-            <CardHeader className="flex justify-between flex-row items-center">
+            <CardHeader className="flex justify-between flex-row items-center relative">
                 <CardTitle>Detalles de viaje</CardTitle>
-                <Button size="icon" variant="ghost" onClick={close}>
+                <Button variant="ghost" onClick={close} size="icon" className="absolute top-3 right-3">
                     <X />
                 </Button>
             </CardHeader>

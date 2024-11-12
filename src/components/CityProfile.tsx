@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { getCityProfile } from "@/services/here";
 import { HereAPIDATA } from "@/services/hereTypes";
 import { getCityImage } from "@/services/pipxabay";
+import DetailSkeleton from "./DetailSkeleton";
+import CityDetail from "./CityDetail";
 
 interface CityProfileProps {
     cityProp: string;
@@ -39,26 +41,14 @@ export default function CityProfile({ cityProp }: CityProfileProps) {
             <DialogContent aria-description="City profile">
                 <DialogTitle>Detalles de {cityProp.split(",")[0]}</DialogTitle>
 
-                <section className="flex gap-4">
-                    <img src={cityImage} alt="some" className="w-64 h-auto" />
-                    {cityProfile.items.length > 0 && (
-                        <ul className="flex flex-col space-y-4 max-h-96 overflow-y-auto">
-                            {cityProfile.items.map((item) => (
-                                <li key={item.id}>
-                                    <div>{item.title}</div>
-                                    <div>{item.address.label}</div>
-                                    <div>{item.position.lat}</div>
-                                    <div>{item.position.lng}</div>
-                                    <div>
-                                        {item.categories
-                                            .map((category) => category.name)
-                                            .join(", ")}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </section>
+                {cityImage === "" && cityProfile.items.length === 0 ? (
+                    <DetailSkeleton />
+                ) : (
+                    <CityDetail
+                        cityImage={cityImage}
+                        cityProfile={cityProfile}
+                    />
+                )}
             </DialogContent>
         </Dialog>
     );

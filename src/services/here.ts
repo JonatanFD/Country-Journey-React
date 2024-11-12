@@ -26,7 +26,7 @@ export async function getCityProfile(ciudad: string, pais: string) {
     }
 
     const { lat, lng } = coordenadas;
-    const url = `https://browse.search.hereapi.com/v1/browse?at=${lat},${lng}&categories=300-3100,500-5000&apiKey=${apiKey}`;
+    const url = `https://browse.search.hereapi.com/v1/browse?at=${lat},${lng}&categories=300-3100,500-5000,700-7000,600-6200,600-6400&apiKey=${apiKey}`;
 
     try {
         const respuesta = await fetch(url);
