@@ -1,4 +1,4 @@
-import { HistorialRecord } from "@/hooks/useHistorial";
+import { HistorialRecord, useHistorial } from "@/hooks/useHistorial";
 import {
     Card,
     CardContent,
@@ -11,11 +11,17 @@ import { Button } from "./ui/button";
 import CityProfile from "./CityProfile";
 import { Label } from "./ui/label";
 
-export default function Details({ record }: { record: HistorialRecord }) {
+export default function Details({ record, close }: { record: HistorialRecord, close: () => void }) {
+
+    const {removeRecord} = useHistorial()
+
     return (
         <Card className="z-30">
-            <CardHeader>
+            <CardHeader className="flex justify-between flex-row items-center">
                 <CardTitle>Detalles de viaje</CardTitle>
+                <Button size="icon" variant="ghost" onClick={close}>
+                    <X />
+                </Button>
             </CardHeader>
             <CardContent className="space-y-4">
                 <Label className="block">Origen: {record.from}</Label>
@@ -29,12 +35,9 @@ export default function Details({ record }: { record: HistorialRecord }) {
                     ))}
                 </ul>
             </CardContent>
-            <CardFooter>
-                <Button size="icon" variant="ghost">
-                    <X />
-                </Button>
-                <Button size="icon" variant="ghost">
-                    <Trash />
+            <CardFooter className="flex justify-end">
+                <Button size="icon" variant="destructive" onClick={() => removeRecord(record)}>
+                    <Trash stroke="#FF453A"/>
                 </Button>
             </CardFooter>
         </Card>

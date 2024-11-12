@@ -8,11 +8,13 @@ export default function Historial() {
     const { historial } = useHistorial();
     const [details, setDetails] = useState<HistorialRecord | null>(null);
 
+    const closeDetails = () => setDetails(null)
+
     return (
         <>
             {historial.length > 0 && (
                 <section className="absolute right-4 top-4 flex gap-4">
-                    {details && <Details record={details} />}
+                    {details && <Details record={details} close={closeDetails} />}
                     <Card className="h-fit z-30">
                         <CardHeader>
                             <CardTitle>Historial de viajes</CardTitle>
