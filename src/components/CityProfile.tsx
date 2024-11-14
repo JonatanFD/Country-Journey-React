@@ -22,7 +22,7 @@ export default function CityProfile({ cityProp }: CityProfileProps) {
     const [city, country] = cityProp.split(",");
     const handleTriggerClick = () => {
         Promise.all([
-            getCityDescription(city, country),
+            getCityDescription(city),
             getCityProfile(city, country),
             getCityImage(city, country)
         ]).then(([descriptionData, profileData, imageData]) => {

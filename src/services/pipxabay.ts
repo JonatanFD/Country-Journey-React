@@ -8,7 +8,6 @@ export async function getCityImage(ciudad: string, pais: string) {
         const response = await fetch(url);
         const data = await response.json() as PixabayData;
         if (data.hits.length > 0) {
-            // Muestra las primeras 3 imágenes encontradas (por ejemplo)
             const imagenes = data.hits.slice(0, 3).map((imagen)=> ({
                 url: imagen.webformatURL,
                 descripcion: imagen.tags

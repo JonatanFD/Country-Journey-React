@@ -34,8 +34,8 @@ export default function Details({ record, close }: { record: HistorialRecord, cl
                 <Label className="block">Costo: {record.cost}</Label>
                 <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
                     {record.path.map((city, index) => (
-                        <li>
-                            <CityProfile key={`${city}-${index}-${Math.random()}`} cityProp={city} />
+                        <li key={`${city}-${index}-${Math.random()}`}>
+                            <CityProfile cityProp={city} />
                         </li>
                     ))}
                 </ul>

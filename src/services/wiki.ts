@@ -1,12 +1,8 @@
-export async function getCityDescription(ciudad: string, pais: string) {
-    const searchQuery = `${ciudad}`;
-    console.log(searchQuery);
-
+export async function getCityDescription(ciudad: string) {
     const url = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(
-        searchQuery
+        ciudad
     )}`;
-    console.log(url);
-    
+
     const data = await fetch(url)
         .then((response) => {
             if (!response.ok) {
