@@ -8,6 +8,7 @@ import DetailSkeleton from "./DetailSkeleton";
 import CityDetail from "./CityDetail";
 import { getCityDescription } from "@/services/wiki";
 import { WikiApi } from "@/services/wikiTypes";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 interface CityProfileProps {
     cityProp: string;
@@ -18,9 +19,8 @@ export default function CityProfile({ cityProp }: CityProfileProps) {
     const [cityImage, setCityImage] = useState("");
     const [cityDescription, setCityDescription] = useState<WikiApi | null>(null);
 
+    const [city, country] = cityProp.split(",");
     const handleTriggerClick = () => {
-        const [city, country] = cityProp.split(",");
-        
         Promise.all([
             getCityDescription(city, country),
             getCityProfile(city, country),
@@ -29,8 +29,8 @@ export default function CityProfile({ cityProp }: CityProfileProps) {
             setCityDescription(descriptionData);
             setCityProfile(profileData);
             setCityImage(imageData[0].url);
-        }).catch((error) => {
-            console.error("Error al cargar los datos:", error);
+        }).catch(() => {
+            alert("Error al cargar los datos :c");
         });
     };
 
@@ -47,7 +47,8 @@ export default function CityProfile({ cityProp }: CityProfileProps) {
             </DialogTrigger>
 
             <DialogContent aria-description="City profile">
-                <DialogTitle>Detalles de {cityProp.split(",")[0]}</DialogTitle>
+                <DialogTitle>Detalles de {city} - {country}</DialogTitle>
+                <DialogDescription></DialogDescription>
 
                 {cityImage === "" && cityProfile.items.length === 0 && cityDescription === null ? (
                     <DetailSkeleton />

@@ -13,7 +13,12 @@ import { Label } from "./ui/label";
 
 export default function Details({ record, close }: { record: HistorialRecord, close: () => void }) {
 
-    const {removeRecord} = useHistorial()
+    const {removeRecord, setCurrentPath} = useHistorial()
+
+    const onEraseClick = () => {
+        removeRecord(record);
+        setCurrentPath(record.path);
+    }
 
     return (
         <Card className="z-30">
@@ -30,13 +35,13 @@ export default function Details({ record, close }: { record: HistorialRecord, cl
                 <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
                     {record.path.map((city, index) => (
                         <li>
-                            <CityProfile key={`${city}-${index}`} cityProp={city} />
+                            <CityProfile key={`${city}-${index}-${Math.random()}`} cityProp={city} />
                         </li>
                     ))}
                 </ul>
             </CardContent>
             <CardFooter className="flex justify-end">
-                <Button size="icon" variant="destructive" onClick={() => removeRecord(record)}>
+                <Button size="icon" variant="destructive" onClick={onEraseClick}>
                     <Trash stroke="#FF453A"/>
                 </Button>
             </CardFooter>

@@ -1,11 +1,73 @@
 import { useGraph } from "@/hooks/useGraph";
+import { useHistorial } from "@/hooks/useHistorial";
 import { useJourney } from "@/hooks/useJourney";
 import { useSelector } from "@/hooks/useSelector";
 import { getCities, getRoutes } from "@/services/api";
+import { City, Route } from "@/types";
 import Konva from "konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import React, { memo, useEffect, useLayoutEffect, useState } from "react";
+import React, {
+    memo,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useState,
+} from "react";
 import { Circle, Layer, Line, Stage } from "react-konva";
+
+// Memoized Line component
+const MemoizedLine = memo(
+    ({
+        route,
+        from,
+        to,
+        canvaLines,
+        setNombre,
+    }: {
+        route: Route;
+        from: City;
+        to: City;
+        canvaLines: React.MutableRefObject<{ [lineId: string]: Konva.Line }>;
+        setNombre: (nombre: string) => void;
+    }) => {
+        console.log("rendering line");
+
+        return (
+            <Line
+                points={[
+                    from.longitude,
+                    from.latitude,
+                    to.longitude,
+                    to.latitude,
+                ]}
+                stroke="green"
+                strokeWidth={4}
+                id={route.from + "-" + route.to}
+                ref={(lineRef) => {
+                    if (lineRef) {
+                        canvaLines.current[route.from + "-" + route.to] =
+                            lineRef;
+                    }
+                }}
+                onClick={() => {
+                    setNombre(route.from + "-" + route.to);
+                    canvaLines.current[route.from + "-" + route.to]?.stroke(
+                        "red"
+                    );
+                }}
+            />
+        );
+    }
+);
+
+// Memoized Circle component
+const MemoizedCircle = memo(({ city }: { city: City }) => {
+    console.log("rendering circle");
+
+    return (
+        <Circle x={city.longitude} y={city.latitude} radius={5} fill="white" />
+    );
+});
 
 const Canva = memo(() => {
     const [screenSize, setScreenSize] = useState({
@@ -13,13 +75,13 @@ const Canva = memo(() => {
         height: window.innerHeight,
     });
     const { routes, cities, setCities, setRoutes } = useGraph();
-    const {setNombre} = useSelector()
-    const {path, cost} = useJourney()
-    const lines = React.useRef<{[lineId: string]:  Konva.Line}>({})
-    console.log("rendering");
-    
+    const { setNombre } = useSelector();
+    const { path, cost } = useJourney();
+    const { currentPath } = useHistorial();
+    const canvaLines = React.useRef<{ [lineId: string]: Konva.Line }>({});
+
     // zoom
-    const handleZoom = (e: KonvaEventObject<WheelEvent>) => {
+    const handleZoom = useCallback((e: KonvaEventObject<WheelEvent>) => {
         e.evt.preventDefault();
         const scaleBy = 1.2;
         const stage = e.target.getStage();
@@ -27,7 +89,6 @@ const Canva = memo(() => {
 
         const oldScale = stage.scaleX();
         const pointer = stage.getPointerPosition();
-
         if (!pointer) return;
 
         const mousePointTo = {
@@ -42,15 +103,13 @@ const Canva = memo(() => {
 
         const newScale =
             direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
         stage.scale({ x: newScale, y: newScale });
-
-        const newPos = {
+        stage.position({
             x: pointer.x - mousePointTo.x * newScale,
             y: pointer.y - mousePointTo.y * newScale,
-        };
-        stage.position(newPos);
-    };
+        });
+    }, []);
+
     // Update Screen Size on Resize
     useEffect(() => {
         window.addEventListener("resize", () => {
@@ -73,16 +132,33 @@ const Canva = memo(() => {
     }, []);
 
     useEffect(() => {
-        if (!path) return;
-        
+        if (!path || !path.length) return;
+        const lines = canvaLines.current;
+
         for (let i = 0; i < path.length - 1; i++) {
-            const line = lines.current[path[i] + "-" + path[i + 1]] ?? lines.current[path[i + 1] + "-" + path[i]];
-            if (!line) return;
-            line.stroke("red");
-            line.strokeWidth(3);
+            const line =
+                lines[`${path[i]}-${path[i + 1]}`] ??
+                lines[`${path[i + 1]}-${path[i]}`];
+            if (line) {
+                line.stroke("red").strokeWidth(3);
+            }
         }
-        
-    }, [path, cost])
+    }, [path, cost]);
+
+    useLayoutEffect(() => {
+        if (!currentPath || !currentPath.length) return;
+        const lines = canvaLines.current;
+
+        for (let i = 0; i < currentPath.length - 1; i++) {
+            const line =
+                lines[`${currentPath[i]}-${currentPath[i + 1]}`] ??
+                lines[`${currentPath[i + 1]}-${currentPath[i]}`];
+            if (line) {
+                line.stroke("green").strokeWidth(4);
+            }
+        }
+    }, [currentPath]);
+
     return (
         <Stage
             width={screenSize.width}
@@ -101,41 +177,26 @@ const Canva = memo(() => {
                     if (!from || !to) return null;
 
                     return (
-                        <Line
+                        <MemoizedLine
                             key={route.from + "-" + route.to}
-                            points={[
-                                from.longitude,
-                                from.latitude,
-                                to.longitude,
-                                to.latitude,
-                            ]}
-                            stroke="green"
-                            strokeWidth={4}
-                            id={route.from + "-" + route.to}
-                            ref={lineRef => {
-                                if (!lineRef) return;
-                                lines.current[route.from + "-" + route.to] = lineRef;
-                            }}
-                            onClick={() => {
-                                setNombre(route.from + "-" + route.to);
-                                lines.current[route.from + "-" + route.to].stroke("red");
-                            }}
+                            route={route}
+                            from={from}
+                            to={to}
+                            canvaLines={canvaLines}
+                            setNombre={setNombre}
                         />
                     );
                 })}
 
                 {cities.map((city) => (
-                    <Circle
+                    <MemoizedCircle
                         key={city.city + "-" + city.country}
-                        x={city.longitude}
-                        y={city.latitude}
-                        radius={5}
-                        fill="white"
+                        city={city}
                     />
                 ))}
             </Layer>
         </Stage>
     );
-})
+});
 
-export default Canva
+export default Canva;
