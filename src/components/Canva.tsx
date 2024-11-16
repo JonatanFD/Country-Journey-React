@@ -76,7 +76,7 @@ const Canva = memo(() => {
     const { routes, cities, setCities, setRoutes } = useGraph();
     const { setNombre } = useSelector();
     const canvaLines = React.useRef<{ [lineId: string]: Konva.Line }>({});
-    const { current, removeRecord } = useHistorial();
+    const { current, removeRecord, records } = useHistorial();
 
     // zoom
     const handleZoom = useCallback((e: KonvaEventObject<WheelEvent>) => {
@@ -107,6 +107,7 @@ const Canva = memo(() => {
             y: pointer.y - mousePointTo.y * newScale,
         });
     }, []);
+
     // Update Screen Size on Resize
     useEffect(() => {
         window.addEventListener("resize", () => {
@@ -116,6 +117,7 @@ const Canva = memo(() => {
             });
         });
     }, []);
+
     // fetch data for canvas
     useLayoutEffect(() => {
         if (routes.length !== 0) return;
@@ -128,37 +130,77 @@ const Canva = memo(() => {
         });
     }, []);
 
+    const getLineKey = (city1: string, city2: string) => {
+        return [city1, city2].sort().join("-");
+    };
+
+    const extractLines = (journey: HistorialJourney) => {
+        const path = journey.path;
+        const lines: { line: Konva.Line; key: string }[] = [];
+
+        for (let i = 0; i < path.length - 1; i++) {
+            const lineKey = getLineKey(path[i], path[i + 1]);
+            const line = canvaLines.current[path[i] + "-" + path[i + 1]] ||
+                        canvaLines.current[path[i + 1] + "-" + path[i]];
+
+            if (line) {
+                lines.push({ line, key: lineKey });
+            }
+        }
+
+        return lines;
+    };
+
+    const getSharedLines = () => {
+        const lineStates = new Map<string, Set<string>>();
+
+        records.forEach((record) => {
+            const lines = extractLines(record);
+            lines.forEach(({ key }) => {
+                if (!lineStates.has(key)) {
+                    lineStates.set(key, new Set());
+                }
+                lineStates.get(key)?.add(record.state);
+            });
+        });
+
+        return lineStates;
+    };
+
+    const updateLineColors = () => {
+        // Reset all lines to green first
+        Object.values(canvaLines.current).forEach(line => {
+            line.stroke("green").strokeWidth(3);
+        });
+
+        const lineStates = getSharedLines();
+
+        // Apply colors based on priority: hover > draw > erase
+        records.forEach((record) => {
+            const lines = extractLines(record);
+            lines.forEach(({ line, key }) => {
+                const states = lineStates.get(key);
+                if (states?.has("hover")) {
+                    line.stroke("blue").strokeWidth(3);
+                } else if (states?.has("draw") && !states?.has("hover")) {
+                    line.stroke("red").strokeWidth(3);
+                } else if (states?.has("erase") && !states?.has("hover") && !states?.has("draw")) {
+                    line.stroke("green").strokeWidth(3);
+                }
+            });
+        });
+    };
+
     useEffect(() => {
         if (!current) return;
         console.log("current", current);
-        const lines = canvaLines.current;
 
-        const colorLines = (journey: HistorialJourney) => {
-            const path = journey.path;
+        if (current.state === "erase") {
+            removeRecord(current);
+        }
 
-            for (let i = 0; i < path.length - 1; i++) {
-                const line =
-                    lines[path[i] + "-" + path[i + 1]] ||
-                    lines[path[i + 1] + "-" + path[i]];
-
-                if (line) {
-                    if (journey.state === "erase") {
-                        line.stroke("green").strokeWidth(3);
-                    } else if (journey.state === "hover") {
-                        line.stroke("blue").strokeWidth(3);
-                    } else if (journey.state === "draw") {
-                        line.stroke("red").strokeWidth(3);
-                    }
-                }
-            }
-
-            if (journey.state === "erase") {
-                removeRecord(journey);
-            }
-        };
-
-        colorLines(current);
-    }, [current]);
+        updateLineColors();
+    }, [current, records]);
 
     return (
         <Stage
