@@ -50,25 +50,25 @@ export default function CityDetail({
     console.log("descripcion", cityDescription);
     
     return (
-        <section className="flex gap-4 flex-row">
-            <div className="w-1/2">
+        <section className="flex gap-4 flex-row max-h-[600px]">
+            <div className="w-[300px] overflow-y-auto space-y-4">
                 <img
                     src={cityDescription?.thumbnail?.source ?? cityImage}
                     alt="some"
-                    className="w-full rounded-xl"
+                    className="w-full rounded-xl max-h-[300px]"
                 />
 
-                <h1>{cityDescription.title}</h1>
+                <h1 className="text-xl font-bold">{cityDescription.title}</h1>
                 <p>{cityDescription.extract}</p>
             </div>
 
-            <div className="w-1/2">
+            <div className="w-[500px] overflow-y-auto">
                 {cityProfile.items.length > 0 && (
-                    <ul className="flex flex-col space-y-8 max-h-96 overflow-y-auto">
+                    <ul className="flex flex-col space-y-8  overflow-y-auto">
                         {cityProfile.items.map((item) => (
                             <li
                                 key={item.id}
-                                className="flex flex-col space-y-2"
+                                className="flex flex-col space-y-2 border-zinc-500 border p-3 rounded-xl mr-3"
                             >
                                 <div>{item.title}</div>
                                 <Label>

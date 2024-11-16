@@ -1,21 +1,21 @@
-import { HistorialRecord, useHistorial } from "@/hooks/useHistorial";
+import { HistorialJourney, useHistorial } from "@/hooks/useHistorial";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import {  useState } from "react";
+import { useState } from "react";
 import Details from "./Details";
 
 export default function Historial() {
-    const { historial } = useHistorial();
-    const [details, setDetails] = useState<HistorialRecord | null>(null);
+    const { records } = useHistorial();
+    const [details, setDetails] = useState<HistorialJourney | null>(null);
 
     const closeDetails = () => setDetails(null);
 
     return (
         <>
-            {historial.length > 0 && (
+            {records.length > 0 && (
                 <section className="absolute right-4 top-4 flex gap-4">
                     {details && (
-                            <Details record={details} close={closeDetails} />
+                        <Details record={details} close={closeDetails} />
                     )}
                     <Card className="h-fit z-30">
                         <CardHeader>
@@ -23,7 +23,7 @@ export default function Historial() {
                         </CardHeader>
                         <CardContent>
                             <ul>
-                                {historial.map((record) => (
+                                {records.map((record) => (
                                     <li key={record.from + record.to}>
                                         <Button
                                             variant="ghost"

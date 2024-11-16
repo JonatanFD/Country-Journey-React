@@ -1,24 +1,64 @@
 import { create } from "zustand";
 
-export interface HistorialRecord {
-    from: string,
-    to: string,
-    path: string[],
-    cost: number
+export type JourneyState = "draw" | "hover" | "erase";
+
+export interface HistorialJourney {
+    from: string;
+    to: string;
+    path: string[];
+    cost: number;
+
+    state: JourneyState;
 }
 
-interface State {
-    historial: HistorialRecord[];
-    currentPath: string[];
-    setCurrentPath: (path: string[]) => void;
-    addRecord: (record: HistorialRecord) => void;
-    removeRecord: (record: HistorialRecord) => void;
+interface HistorialState {
+    records: HistorialJourney[];
+    current: HistorialJourney | null;
+
+    addRecord: (journey: HistorialJourney) => void;
+    removeRecord: (journey: HistorialJourney) => void;
+    updateRecord: (journey: HistorialJourney) => void;
+
+    setCurrentRecord: (journey: HistorialJourney) => void;
 }
 
-export const useHistorial = create<State>((set) => ({
-    historial: [],
-    currentPath: [],
-    setCurrentPath: (path) => set(() => ({ currentPath: path })),
-    addRecord: (record: HistorialRecord) => set((state) => ({ historial: [...state.historial, record] })),
-    removeRecord: (record: HistorialRecord) => set((state) => ({ historial: state.historial.filter((r) => r.from !== record.from || r.to !== record.to) })),
-}))
+export const useHistorial = create<HistorialState>((set, get) => ({
+    records: [],
+    current: null,
+
+    addRecord: (journey: HistorialJourney) => {
+        if (journey.from === journey.to) return; // no son iguales
+
+        const names = new Set([journey.from, journey.to]); // no hay duplicados
+        if (get().records.find((r) => names.has(r.from) && names.has(r.to)))
+            return;
+
+        set((state) => ({
+            records: [...state.records, journey],
+            current: journey,
+        }));
+    },
+
+    removeRecord: (journey: HistorialJourney) => {
+        set((state) => ({
+            records: state.records.filter(
+                (r) => r.from !== journey.from || r.to !== journey.to
+            ),
+        }));
+    },
+
+    updateRecord: (journey: HistorialJourney) =>
+        set((state) => ({
+            records: state.records.map((r) =>
+                r.from === journey.from && r.to === journey.to
+                    ? { ...r, state: r.state === "draw" ? "hover" : "draw" }
+                    : r
+            ),
+            current: {
+                ...state.current,
+                state: state.current?.state === "draw" ? "hover" : "draw",
+            } as HistorialJourney,
+        })),
+    setCurrentRecord: (journey: HistorialJourney) =>
+        set(() => ({ current: journey })),
+}));

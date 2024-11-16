@@ -11,32 +11,34 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import Selector from "./Selector";
-import { useJourney, useJourneyForm } from "@/hooks/useJourney";
+import { useJourneyForm } from "@/hooks/useJourney";
 import { getJourney } from "@/services/api";
-import { useHistorial } from "@/hooks/useHistorial";
+import { HistorialJourney, useHistorial } from "@/hooks/useHistorial";
 import Filters from "./Filters";
 import useFilters from "@/hooks/useFilters";
 
 export default function JourneyForm() {
-    const { setJourney } = useJourney();
     const { form, handleChange, handleFocus, isSelectorOpen, field, keyword } =
         useJourneyForm();
     const { addRecord } = useHistorial();
-    const {filters} = useFilters()
+    const { filters } = useFilters();
 
     const onSubmit = form.handleSubmit((data) => {
         try {
-            getJourney({ from: data.from, to: data.to, countries: filters }).then(
-                (res) => {
-                    setJourney(res.cost, res.path);
-                    addRecord({
-                        from: data.from,
-                        to: data.to,
-                        cost: res.cost,
-                        path: res.path,
-                    });
-                }
-            );
+            getJourney({
+                from: data.from,
+                to: data.to,
+                countries: filters,
+            }).then((res) => {
+                const record: HistorialJourney = {
+                    from: data.from,
+                    to: data.to,
+                    cost: Math.round(res.cost),
+                    path: res.path,
+                    state: "draw",
+                };
+                addRecord(record);
+            });
         } catch (error) {
             console.log(error);
         }
@@ -44,7 +46,10 @@ export default function JourneyForm() {
 
     return (
         <div className="absolute top-4 left-4 flex gap-4  h-fit">
-            <Card className="w-fit h-fit z-30" onClick={(e) => e.stopPropagation()}>
+            <Card
+                className="w-fit h-fit z-30"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <CardHeader>
                     <CardTitle>Formulario de viaje</CardTitle>
                 </CardHeader>

@@ -1,6 +1,5 @@
 import { useGraph } from "@/hooks/useGraph";
-import { useHistorial } from "@/hooks/useHistorial";
-import { useJourney } from "@/hooks/useJourney";
+import { HistorialJourney, useHistorial } from "@/hooks/useHistorial";
 import { useSelector } from "@/hooks/useSelector";
 import { getCities, getRoutes } from "@/services/api";
 import { City, Route } from "@/types";
@@ -76,9 +75,8 @@ const Canva = memo(() => {
     });
     const { routes, cities, setCities, setRoutes } = useGraph();
     const { setNombre } = useSelector();
-    const { path, cost } = useJourney();
-    const { currentPath } = useHistorial();
     const canvaLines = React.useRef<{ [lineId: string]: Konva.Line }>({});
+    const { current, removeRecord } = useHistorial();
 
     // zoom
     const handleZoom = useCallback((e: KonvaEventObject<WheelEvent>) => {
@@ -109,7 +107,6 @@ const Canva = memo(() => {
             y: pointer.y - mousePointTo.y * newScale,
         });
     }, []);
-
     // Update Screen Size on Resize
     useEffect(() => {
         window.addEventListener("resize", () => {
@@ -132,32 +129,36 @@ const Canva = memo(() => {
     }, []);
 
     useEffect(() => {
-        if (!path || !path.length) return;
+        if (!current) return;
+        console.log("current", current);
         const lines = canvaLines.current;
 
-        for (let i = 0; i < path.length - 1; i++) {
-            const line =
-                lines[`${path[i]}-${path[i + 1]}`] ??
-                lines[`${path[i + 1]}-${path[i]}`];
-            if (line) {
-                line.stroke("red").strokeWidth(3);
-            }
-        }
-    }, [path, cost]);
+        const colorLines = (journey: HistorialJourney) => {
+            const path = journey.path;
 
-    useLayoutEffect(() => {
-        if (!currentPath || !currentPath.length) return;
-        const lines = canvaLines.current;
+            for (let i = 0; i < path.length - 1; i++) {
+                const line =
+                    lines[path[i] + "-" + path[i + 1]] ||
+                    lines[path[i + 1] + "-" + path[i]];
 
-        for (let i = 0; i < currentPath.length - 1; i++) {
-            const line =
-                lines[`${currentPath[i]}-${currentPath[i + 1]}`] ??
-                lines[`${currentPath[i + 1]}-${currentPath[i]}`];
-            if (line) {
-                line.stroke("green").strokeWidth(4);
+                if (line) {
+                    if (journey.state === "erase") {
+                        line.stroke("green").strokeWidth(3);
+                    } else if (journey.state === "hover") {
+                        line.stroke("blue").strokeWidth(3);
+                    } else if (journey.state === "draw") {
+                        line.stroke("red").strokeWidth(3);
+                    }
+                }
             }
-        }
-    }, [currentPath]);
+
+            if (journey.state === "erase") {
+                removeRecord(journey);
+            }
+        };
+
+        colorLines(current);
+    }, [current]);
 
     return (
         <Stage
