@@ -154,26 +154,20 @@ const Canva = memo(() => {
         if (current === null) return;
 
         let filteredRecords = records;
-        console.log("records", records);
 
         if (excludeCurrent) {
             const currentLines = extractLines(current);
             currentLines.forEach(({ line }) => {
                 line.stroke("green").strokeWidth(3);
             });
-            console.log("current", current);
             
             filteredRecords = records.filter((record) =>{
-                console.log("record", record);
                 if (record.from === current.from && record.to === current.to) return false;
                 if (record.from === current.to && record.to === current.from) return false;
                 return true;
                 
             });
         }
-        
-        console.log("filteredRecords", filteredRecords);
-        
         // Pintar todas las líneas de verde
         Object.keys(canvaLines.current).forEach((key) => {
             canvaLines.current[key].stroke("green").strokeWidth(3);
@@ -188,7 +182,7 @@ const Canva = memo(() => {
     
         // Iterar sobre los records ordenados y actualizar colores
         orderedRecords.forEach((record) => {
-            const lines = extractLines(record); // Extraer líneas de la ruta
+            const lines = extractLines(record);
             lines.forEach(({ line }) => {
                 if (record.state === "draw") {
                     line.stroke("red").strokeWidth(3); 
