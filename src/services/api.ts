@@ -1,6 +1,6 @@
 import { City, GraphFilteredData, JourneyConstrains, Route } from "../types";
 
-const API_URL = "http://127.0.0.1:5000/";
+const API_URL = import.meta.env.VITE_FLASK_API_URL;
 
 export async function getCities() {
   try {
