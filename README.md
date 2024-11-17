@@ -59,6 +59,10 @@ Country Journey es una aplicación web desarrollada con Vite y React JS que perm
 Si deseas ejecutar la API localmente:
 
 1. Clona el repositorio de la API
+   ```bash
+   git clone https://github.com/JonatanFD/Country-Journey-Flask.git
+   cd Country-Journey-Flask
+   ```
 2. Crea un entorno virtual:
    ```bash
    python -m venv venv
