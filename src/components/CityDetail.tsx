@@ -47,8 +47,6 @@ export default function CityDetail({
     cityDescription: WikiApi;
 }) {
 
-    console.log("descripcion", cityDescription);
-    
     return (
         <section className="flex gap-4 flex-row max-h-[600px]">
             <div className="w-[300px] overflow-y-auto space-y-4">

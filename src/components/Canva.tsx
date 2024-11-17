@@ -14,7 +14,6 @@ import React, {
 } from "react";
 import { Circle, Layer, Line, Stage } from "react-konva";
 
-// Memoized Line component
 const MemoizedLine = memo(
     ({
         route,
@@ -59,7 +58,6 @@ const MemoizedLine = memo(
     }
 );
 
-// Memoized Circle component
 const MemoizedCircle = memo(({ city }: { city: City }) => {
     console.log("rendering circle");
 
@@ -151,52 +149,64 @@ const Canva = memo(() => {
         return lines;
     };
 
-    const getSharedLines = () => {
-        const lineStates = new Map<string, Set<string>>();
+    const updateLineColors = (excludeCurrent = false) => {
+        // Obtener los records filtrados
+        if (current === null) return;
 
-        records.forEach((record) => {
-            const lines = extractLines(record);
-            lines.forEach(({ key }) => {
-                if (!lineStates.has(key)) {
-                    lineStates.set(key, new Set());
-                }
-                lineStates.get(key)?.add(record.state);
+        let filteredRecords = records;
+        console.log("records", records);
+
+        if (excludeCurrent) {
+            const currentLines = extractLines(current);
+            currentLines.forEach(({ line }) => {
+                line.stroke("green").strokeWidth(3);
             });
+            console.log("current", current);
+            
+            filteredRecords = records.filter((record) =>{
+                console.log("record", record);
+                if (record.from === current.from && record.to === current.to) return false;
+                if (record.from === current.to && record.to === current.from) return false;
+                return true;
+                
+            });
+        }
+        
+        console.log("filteredRecords", filteredRecords);
+        
+        // Pintar todas las líneas de verde
+        Object.keys(canvaLines.current).forEach((key) => {
+            canvaLines.current[key].stroke("green").strokeWidth(3);
         });
-
-        return lineStates;
-    };
-
-    const updateLineColors = () => {
-        // Reset all lines to green first
-        Object.values(canvaLines.current).forEach(line => {
-            line.stroke("green").strokeWidth(3);
+    
+        // Ordenar los records: primero "draw", luego "hover"
+        const orderedRecords = filteredRecords.sort((a, b) => {
+            const priority = { draw: 1, hover: 2 };
+            
+            return (priority[a.state as "draw" | "hover"] - priority[b.state as "draw" | "hover"]);
         });
-
-        const lineStates = getSharedLines();
-
-        // Apply colors based on priority: hover > draw > erase
-        records.forEach((record) => {
-            const lines = extractLines(record);
-            lines.forEach(({ line, key }) => {
-                const states = lineStates.get(key);
-                if (states?.has("hover")) {
+    
+        // Iterar sobre los records ordenados y actualizar colores
+        orderedRecords.forEach((record) => {
+            const lines = extractLines(record); // Extraer líneas de la ruta
+            lines.forEach(({ line }) => {
+                if (record.state === "draw") {
+                    line.stroke("red").strokeWidth(3); 
+                } else if (record.state === "hover") {
                     line.stroke("blue").strokeWidth(3);
-                } else if (states?.has("draw") && !states?.has("hover")) {
-                    line.stroke("red").strokeWidth(3);
-                } else if (states?.has("erase") && !states?.has("hover") && !states?.has("draw")) {
-                    line.stroke("green").strokeWidth(3);
                 }
             });
         });
+    
     };
-
+    
     useEffect(() => {
         if (!current) return;
-        console.log("current", current);
 
         if (current.state === "erase") {
+            updateLineColors(true);
             removeRecord(current);
+            return;
         }
 
         updateLineColors();

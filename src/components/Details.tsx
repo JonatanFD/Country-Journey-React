@@ -24,6 +24,7 @@ export default function Details({
 
     const onEraseClick = () => {
         setCurrentRecord({ ...record, state: "erase" });
+        close();
     };
 
     const onHoverClick = () => {

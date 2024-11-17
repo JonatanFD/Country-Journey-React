@@ -44,6 +44,7 @@ export const useHistorial = create<HistorialState>((set, get) => ({
             records: state.records.filter(
                 (r) => r.from !== journey.from || r.to !== journey.to
             ),
+            current: null,
         }));
     },
 
